@@ -719,6 +719,7 @@ export const AdminPermission = {
   PAYMENTS_LIST: 'payments:list',
   PAYMENTS_VIEW: 'payments:view',
   PAYMENTS_RECONCILE: 'payments:reconcile',
+  PAYMENT_GATEWAYS_MANAGE: 'payments:gateways_manage',
   REFUNDS_LIST: 'refunds:list',
   REFUNDS_VIEW: 'refunds:view',
   REFUNDS_PROCESS: 'refunds:process',
@@ -745,6 +746,335 @@ export const AdminPermission = {
   REPORTS_EXPORT: 'reports:export',
   PROVIDERS_VIEW: 'providers:view',
   PROVIDERS_MANAGE: 'providers:manage',
+
+  // B2B Agent Management Permissions
+  AGENTS_LIST: 'agents:list',
+  AGENTS_VIEW: 'agents:view',
+  AGENTS_KYC_REVIEW: 'agents:kyc_review',
+  AGENTS_SUSPEND: 'agents:suspend',
+  AGENTS_CREDIT_MANAGE: 'agents:credit_manage',
+
+  // Commission Management Permissions
+  COMMISSIONS_LIST: 'commissions:list',
+  COMMISSIONS_MANAGE: 'commissions:manage',
+
+  // Financial Ledger & Reconciliation Permissions
+  LEDGER_VIEW: 'ledger:view',
+  LEDGER_RECONCILE: 'ledger:reconcile',
+  LEDGER_ADJUST: 'ledger:adjust',
 } as const;
 
 export type AdminPermissionKey = (typeof AdminPermission)[keyof typeof AdminPermission];
+
+// ---------------------------------------------------------------------------
+// B2B Agent & KYC Management
+// ---------------------------------------------------------------------------
+
+export type AgentStatus =
+  | 'PENDING_KYC'
+  | 'KYC_SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'SUSPENDED';
+
+export type AgentKycDocType =
+  | 'PAN_CARD'
+  | 'GST_CERTIFICATE'
+  | 'BUSINESS_REGISTRATION'
+  | 'BANK_STATEMENT'
+  | 'OWNER_IDENTITY'
+  | 'CANCELLED_CHEQUE';
+
+export type AgentStaffRole =
+  | 'OWNER'
+  | 'MANAGER'
+  | 'BOOKING_AGENT'
+  | 'ACCOUNTANT'
+  | 'VIEWER';
+
+export interface AgentWalletItem {
+  id: string;
+  agentId: string;
+  cashBalance: number;
+  creditLimit: number;
+  creditUsed: number;
+  isFrozen: boolean;
+  frozenReason?: string | null;
+  frozenAt?: string | null;
+  frozenBy?: string | null;
+  totalTopups?: number;
+  totalSpent?: number;
+  totalCommission?: number;
+  totalRefunds?: number;
+  version?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface AgentKycDocumentItem {
+  id: string;
+  agentId: string;
+  docType: AgentKycDocType;
+  fileUrl: string;
+  storageKey: string;
+  verifiedAt?: string | null;
+  verifiedBy?: string | null;
+  rejectedAt?: string | null;
+  rejectReason?: string | null;
+  createdAt: string;
+}
+
+export interface AgentBankAccountItem {
+  id: string;
+  agentId: string;
+  accountHolderName: string;
+  accountNumber: string;
+  ifscCode: string;
+  bankName: string;
+  isVerified: boolean;
+  isPrimary: boolean;
+  verifiedAt?: string | null;
+  withdrawFreezeUntil?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface AgentStaffItem {
+  id: string;
+  agentId: string;
+  userId: string;
+  role: AgentStaffRole;
+  permissions?: unknown;
+  isActive: boolean;
+  invitedAt: string;
+  joinedAt?: string | null;
+  user?: {
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
+    phone?: string | null;
+    role: string;
+    status: string;
+  };
+}
+
+export interface AgentListItem {
+  id: string;
+  businessName: string;
+  contactPersonName: string;
+  email: string;
+  phone: string;
+  businessAddress: string;
+  city: string;
+  state: string;
+  pincode?: string | null;
+  logoUrl?: string | null;
+  gstNumber?: string | null;
+  panNumber?: string | null;
+  status: AgentStatus;
+  rejectionReason?: string | null;
+  approvedAt?: string | null;
+  approvedBy?: string | null;
+  suspendedAt?: string | null;
+  suspendedReason?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  wallet?: {
+    cashBalance: number;
+    creditLimit: number;
+    creditUsed: number;
+    isFrozen: boolean;
+  };
+  _count?: {
+    bookings: number;
+    staff?: number;
+    kycDocuments?: number;
+  };
+}
+
+export interface AgentDetailsData extends AgentListItem {
+  wallet?: AgentWalletItem;
+  kycDocuments: AgentKycDocumentItem[];
+  bankAccounts: AgentBankAccountItem[];
+  staff: AgentStaffItem[];
+  _count?: {
+    bookings: number;
+    staff?: number;
+    kycDocuments?: number;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Commission Engine
+// ---------------------------------------------------------------------------
+
+export type CommissionRuleType =
+  | 'FLAT_PERCENTAGE'
+  | 'FLAT_AMOUNT'
+  | 'TIERED_BOOKING'
+  | 'OPERATOR_SPECIFIC'
+  | 'ROUTE_SPECIFIC';
+
+export interface CommissionRuleItem {
+  id: string;
+  name: string;
+  ruleType: CommissionRuleType;
+  agentId?: string | null;
+  operatorName?: string | null;
+  fromCityId?: number | null;
+  toCityId?: number | null;
+  percentage?: number | null;
+  flatAmount?: number | null;
+  minFare?: number | null;
+  maxCommission?: number | null;
+  priority: number;
+  effectiveFrom: string;
+  effectiveUntil?: string | null;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  agent?: {
+    id: string;
+    businessName: string;
+    email: string;
+  } | null;
+}
+
+export interface CreateCommissionRuleInput {
+  name: string;
+  ruleType: CommissionRuleType;
+  agentId?: string | null;
+  operatorName?: string | null;
+  fromCityId?: number | null;
+  toCityId?: number | null;
+  percentage?: number | null;
+  flatAmount?: number | null;
+  minFare?: number | null;
+  maxCommission?: number | null;
+  priority?: number;
+  effectiveFrom?: string;
+  effectiveUntil?: string | null;
+}
+
+// ---------------------------------------------------------------------------
+// Double-Entry Ledger & Platform Reconciliation
+// ---------------------------------------------------------------------------
+
+export type LedgerEntryType =
+  | 'AGENT_WALLET_DEBIT'
+  | 'AGENT_WALLET_CREDIT'
+  | 'AGENT_WALLET_TOPUP'
+  | 'COMMISSION_CREDIT'
+  | 'COMMISSION_REVERSAL'
+  | 'REFUND_CREDIT'
+  | 'CONVENIENCE_FEE_DEBIT'
+  | 'CREDIT_LIMIT_UTILIZATION'
+  | 'CREDIT_LIMIT_RELEASE'
+  | 'PLATFORM_REVENUE_CREDIT'
+  | 'MANUAL_ADJUSTMENT';
+
+export interface LedgerEntryItem {
+  id: string;
+  batchId: string;
+  agentId?: string | null;
+  bookingId?: string | null;
+  cancellationId?: string | null;
+  refundId?: string | null;
+  topupId?: string | null;
+  type: LedgerEntryType;
+  debitAmount: number;
+  creditAmount: number;
+  currency: string;
+  description: string;
+  referenceId?: string | null;
+  idempotencyKey?: string | null;
+  postedAt: string;
+  createdBy?: string | null;
+  agent?: {
+    id: string;
+    businessName: string;
+    email: string;
+  } | null;
+  booking?: {
+    bookingNumber: string;
+  } | null;
+}
+
+export interface ReconciliationAgentReportItem {
+  agentId: string;
+  businessName: string;
+  status: AgentStatus;
+  currentBalance: number;
+  calculatedBalance: number;
+  totalCredits: number;
+  totalDebits: number;
+  discrepancy: number;
+  reconciliationStatus: 'MATCHED' | 'DISCREPANCY_DETECTED';
+}
+
+export interface ReconciliationReportData {
+  totalAgentsAudited: number;
+  matchedAgents: number;
+  discrepantAgents: number;
+  auditTimestamp: string;
+  agents: ReconciliationAgentReportItem[];
+}
+
+export interface ManualAdjustmentInput {
+  agentId: string;
+  amount: number;
+  direction: 'CREDIT_AGENT' | 'DEBIT_AGENT';
+  reason: string;
+  idempotencyKey?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Payment Gateway Orchestration & Multi-PG Management
+// ---------------------------------------------------------------------------
+
+export interface PaymentGatewayConfigItem {
+  id: string;
+  gateway: string;
+  name: string;
+  isEnabled: boolean;
+  isPrimary: boolean;
+  priority: number;
+  supportedMethods: string[];
+  mode: string;
+  trafficWeight: number;
+  failureThresholdPct?: number;
+  consecutiveFailures?: number;
+  isHealthy: boolean;
+  isCircuitOpen?: boolean;
+  totalSuccesses?: number;
+  totalFailures?: number;
+  lastHealthCheck?: string | null;
+  metadata?: Record<string, unknown> | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface GatewayMetricsData {
+  gateways: PaymentGatewayConfigItem[];
+  transactionAggregates: Array<{
+    gateway: string;
+    status: string;
+    _count: { id: number };
+    _sum: { amount: number | null };
+  }>;
+  generatedAt: string;
+}
+
+export interface UpdateGatewayConfigInput {
+  isEnabled?: boolean;
+  isPrimary?: boolean;
+  mode?: 'LIVE' | 'TEST' | 'MAINTENANCE';
+  trafficWeight?: number;
+  supportedMethods?: string[];
+  priority?: number;
+}
+

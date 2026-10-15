@@ -26,6 +26,10 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Briefcase,
+  Percent,
+  Scale,
+  Cpu,
 } from 'lucide-react';
 import type { AdminPermissionKey } from '@/types/api';
 
@@ -48,7 +52,16 @@ const NAV_SECTIONS: NavSection[] = [
       { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permission: 'dashboard:view' },
       { name: 'Bookings', href: '/bookings', icon: Ticket, permission: 'bookings:list' },
       { name: 'Payments', href: '/payments', icon: CreditCard, permission: 'payments:list' },
+      { name: 'Payment Gateways', href: '/payments/gateways', icon: Cpu, permission: 'payments:gateways_manage' },
       { name: 'Refunds', href: '/refunds', icon: Undo2, permission: 'refunds:list' },
+    ],
+  },
+  {
+    title: 'B2B & Partners',
+    items: [
+      { name: 'Agents & KYC', href: '/agents', icon: Briefcase, permission: 'agents:list' },
+      { name: 'Commissions', href: '/commissions', icon: Percent, permission: 'commissions:list' },
+      { name: 'Platform Ledger', href: '/ledger', icon: Scale, permission: 'ledger:view' },
     ],
   },
   {

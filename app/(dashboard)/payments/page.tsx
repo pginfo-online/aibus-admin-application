@@ -24,6 +24,7 @@ import {
   XCircle,
   RefreshCw,
   ExternalLink,
+  Cpu,
 } from 'lucide-react';
 import type { PaymentListItem, PaymentStatsData, PaginationMeta } from '@/types/api';
 
@@ -98,18 +99,29 @@ export default function PaymentsListPage() {
         title="Payment Operations"
         description="Monitor gateway settlements, verify transactions, and trigger manual reconciliations."
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<RotateCcw className="h-3.5 w-3.5" />}
-            onClick={() => {
-              paymentsQuery.refetch();
-              statsQuery.refetch();
-            }}
-            isLoading={paymentsQuery.isFetching}
-          >
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <Link href="/payments/gateways">
+              <Button
+                variant="gold"
+                size="sm"
+                leftIcon={<Cpu className="h-3.5 w-3.5" />}
+              >
+                Gateway Orchestrator
+              </Button>
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<RotateCcw className="h-3.5 w-3.5" />}
+              onClick={() => {
+                paymentsQuery.refetch();
+                statsQuery.refetch();
+              }}
+              isLoading={paymentsQuery.isFetching}
+            >
+              Refresh
+            </Button>
+          </div>
         }
       />
 

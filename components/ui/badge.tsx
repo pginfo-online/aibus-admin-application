@@ -53,7 +53,7 @@ export function Badge({
  */
 export function getStatusBadgeVariant(status: string): BadgeProps['variant'] {
   const upper = (status || '').toUpperCase();
-  if (['CONFIRMED', 'ACTIVE', 'SUCCESS', 'COMPLETED', 'RESOLVED', 'SENT', 'ONLINE'].includes(upper)) {
+  if (['CONFIRMED', 'ACTIVE', 'SUCCESS', 'COMPLETED', 'RESOLVED', 'SENT', 'ONLINE', 'APPROVED', 'MATCHED', 'LIVE'].includes(upper)) {
     return 'success';
   }
   if (
@@ -66,6 +66,12 @@ export function getStatusBadgeVariant(status: string): BadgeProps['variant'] {
       'AWAITING_CUSTOMER',
       'PENDING_REVIEW',
       'REFUND_PENDING',
+      'PENDING_KYC',
+      'KYC_SUBMITTED',
+      'UNDER_REVIEW',
+      'PAYMENT_PENDING',
+      'TEST',
+      'SANDBOX',
     ].includes(upper)
   ) {
     return 'warning';
@@ -80,14 +86,18 @@ export function getStatusBadgeVariant(status: string): BadgeProps['variant'] {
       'EXHAUSTED',
       'DISABLED',
       'OFFLINE',
+      'REJECTED',
+      'DISCREPANCY_DETECTED',
+      'CIRCUIT_OPEN',
+      'MAINTENANCE',
     ].includes(upper)
   ) {
     return 'destructive';
   }
-  if (['ESCALATED', 'SUPER_ADMIN', 'ADMIN'].includes(upper)) {
+  if (['ESCALATED', 'SUPER_ADMIN', 'ADMIN', 'OWNER', 'MANAGER', 'COMMISSION_CREDIT'].includes(upper)) {
     return 'gold';
   }
-  if (['RECONCILED', 'REFUNDED'].includes(upper)) {
+  if (['RECONCILED', 'REFUNDED', 'AGENT_WALLET_TOPUP', 'AGENT_WALLET_CREDIT'].includes(upper)) {
     return 'info';
   }
   return 'neutral';

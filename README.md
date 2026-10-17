@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AiBus Admin Panel
 
-## Getting Started
+The admin panel is a Next.js application. Vercel detects and builds it automatically; no custom `vercel.json` is required.
 
-First, run the development server:
+## Run locally
 
 ```bash
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Set `NEXT_PUBLIC_API_URL` in `.env.local` to the backend's absolute API URL, including its version path (for example, `https://api.example.com/api/v1`). The browser calls the backend directly, so the backend must be reachable from the public internet and allow requests from the admin panel's origin.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push the admin app to a Git provider that Vercel can access, then import that repository in Vercel. If importing a monorepo containing the other AiBus apps, set **Root Directory** to `admin`; if the repository itself is the admin app, use its root.
+2. Leave the framework preset as **Next.js** and use the detected install/build settings (`npm install` and `npm run build`). Leave the output directory at its default.
+3. In **Project Settings → Environment Variables**, add `NEXT_PUBLIC_API_URL` with the HTTPS URL of the production backend API, including `/api/v1`. Add it to each environment where the app will be built (Production, and Preview/Development if used).
+4. Configure the backend's CORS allowlist to include the Vercel deployment URL and any custom admin domain. Ensure the backend and its database are independently deployed and available; Vercel only hosts this admin app.
+5. Redeploy after adding or changing the variable. `NEXT_PUBLIC_` values are embedded in the client bundle at build time, so do not put secrets in this variable.
+6. Open the deployed `/login` page and verify that an authorized admin can sign in and reach the dashboard.
 
-## Learn More
+## Validate before deployment
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The lint command currently reports pre-existing lint findings elsewhere in the app; the production build is the deployment check.

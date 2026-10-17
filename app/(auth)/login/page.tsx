@@ -11,7 +11,7 @@ import { toast } from '@/store/toast-store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Bus, Lock, Mail, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Bus, Lock, Mail, AlertCircle } from 'lucide-react';
 import type { LoginResponseData } from '@/types/api';
 
 const loginSchema = z.object({
@@ -29,7 +29,6 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -64,24 +63,13 @@ export default function LoginPage() {
         toast.success(`Welcome back, ${user.firstName || user.email}!`);
         router.push('/dashboard');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof ApiClientError) {
         setErrorMessage(err.message);
       } else {
-        setErrorMessage('Unable to connect to the backend server. Please verify port 3009 is running.');
+        setErrorMessage('Unable to connect to the backend server. Check the configured API URL and try again.');
       }
     }
-  };
-
-  const handleFillDemo = (role: 'SUPER_ADMIN' | 'ADMIN' | 'SUPPORT') => {
-    const creds = {
-      SUPER_ADMIN: { email: 'superadmin@aibus.internal', password: 'Password@123' },
-      ADMIN: { email: 'admin@aibus.internal', password: 'Password@123' },
-      SUPPORT: { email: 'support@aibus.internal', password: 'Password@123' },
-    };
-    setValue('email', creds[role].email);
-    setValue('password', creds[role].password);
-    setErrorMessage(null);
   };
 
   return (
@@ -122,7 +110,7 @@ export default function LoginPage() {
               <Input
                 label="Email Address"
                 type="email"
-                placeholder="admin@aibus.internal"
+                placeholder="admin@example.com"
                 leftIcon={<Mail className="h-4 w-4" />}
                 error={errors.email?.message}
                 {...register('email')}
@@ -148,44 +136,6 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Quick Demo Switcher */}
-            <div className="mt-6 pt-5 border-t border-slate-800">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <ShieldCheck className="h-3.5 w-3.5 text-amber-500" /> Demo Presets
-                </span>
-                <span className="text-[10px] text-slate-500">Click to autofill</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-[11px] py-1 h-auto"
-                  onClick={() => handleFillDemo('SUPER_ADMIN')}
-                >
-                  Super Admin
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-[11px] py-1 h-auto"
-                  onClick={() => handleFillDemo('ADMIN')}
-                >
-                  Admin
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="text-[11px] py-1 h-auto"
-                  onClick={() => handleFillDemo('SUPPORT')}
-                >
-                  Support
-                </Button>
-              </div>
-            </div>
           </CardContent>
         </Card>
 

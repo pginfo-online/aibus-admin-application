@@ -33,10 +33,43 @@ export interface RequestOptions extends Omit<RequestInit, 'body'> {
 const DEFAULT_TIMEOUT_MS = 30000;
 
 export function getApiBaseUrl(): string {
-  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!apiUrl) {
+    throw new ApiClientError(
+      'NEXT_PUBLIC_API_URL is not configured. Set it to the backend API URL, such as https://api.example.com/api/v1.',
+      500,
+      'API_URL_NOT_CONFIGURED'
+    );
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3009/api/v1';
+
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(apiUrl);
+  } catch {
+    throw new ApiClientError(
+      'NEXT_PUBLIC_API_URL must be an absolute HTTP or HTTPS URL.',
+      500,
+      'INVALID_API_URL'
+    );
+  }
+
+  if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+    throw new ApiClientError(
+      'NEXT_PUBLIC_API_URL must use HTTP or HTTPS.',
+      500,
+      'INVALID_API_URL'
+    );
+  }
+
+  if (process.env.NODE_ENV === 'production' && parsedUrl.protocol !== 'https:') {
+    throw new ApiClientError(
+      'NEXT_PUBLIC_API_URL must use HTTPS in production.',
+      500,
+      'INSECURE_API_URL'
+    );
+  }
+
+  return parsedUrl.toString().replace(/\/+$/, '');
 }
 
 // Token refresh synchronization mutex
